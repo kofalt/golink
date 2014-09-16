@@ -1,54 +1,70 @@
 #!/bin/bash
 
-# Where is this script located?
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-# subsection arg?
-[ -z "$2" ] && SUBSECTION="./..." || SUBSECTION="./$2"
-
-
 # Project details
 pkg="polydawn.net/golink"
 name="golink"
 
-(
+# Where is this script located?
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+
+
+function usage {
+	echo "Usage: $0 [init|build|test|install|fmt|doc] [go packages...]"
+	exit 2
+}
+
+function run_init {
+	git submodule update --init
+}
+
+function run_build   { go build -o $name $pkg/main; }
+function run_test    { go test -v "$pkgs";          }
+function run_fmt     { go fmt "$pkgs";              }
+function run_install { go install $pkg/main;        }
+
+function run_doc {
+	# If packages were not specified, use local folders
+	if [[ $pkgs == "./..." ]] ; then
+		pkgs=$(for dir in */; do find "$dir" -type d; done)
+	fi
+
+	for package in $pkgs; do
+		echo -e "==== $package ====\n"
+		godoc $pkg/$package
+		echo -e "\n\n\n"
+	done
+}
+
+# pkgs to compile
+pkgs=()
+
+# Get command-line parameters
+for opt in $@; do case "$opt" in
+	init)    do_init=true    ;;
+	build)   do_build=true   ;;
+	test)    do_test=true    ;;
+	install) do_install=true ;;
+	fmt)     do_fmt=true     ;;
+	doc)     do_doc=true     ;;
+	help)    usage           ;;
+	*)       pkgs+=($opt)    ;; #
+esac; done
+
+# Decide if all packages will be compiled, or user-specified ones
+if [[ ${#pkgs[@]} -eq 0 ]] ; then pkgs="./..."; else pkgs="${pkgs[@]}"; fi
+
+(
 	cd "$DIR"
 
 	export GOPATH="$PWD"/.gopath/
 	export BASEDIR="$PWD"
 
-	case "$1" in
-		init)
-			# it's your responsibility to do this the first time
-			# (we don't do it at the front of every build because it will move submodules if you already have them, and that might not be what you want as you're plowing along)
-			git submodule update --init
-			;;
-		build)
-			go build -o $name $pkg/main
-			;;
-		test)
-			go test -v "$SUBSECTION"
-			;;
-		install)
-			go install $pkg/main
-			;;
-		fmt)
-			go fmt "$SUBSECTION"
-			;;
-		doc)
-			[ -z "$2" ] && packages=$(for dir in */; do find "$dir" -type d; done) || packages="$2"
-			for package in $packages; do
-				echo -e "==== $package ====\n"
-				godoc $pkg/$package
-				echo -e "\n\n\n"
-			done
-			;;
-		*)
-			echo "Usage: $0 {init|build|test|install|fmt|doc}" 1>&2;
-			exit 1
-		;;
-	esac
+	# Run commands in right order
+	test $do_init    && run_init
+	test $do_build   && run_build
+	test $do_test    && run_test
+	test $do_install && run_install
+	test $do_fmt     && run_fmt
+	test $do_doc     && run_doc
 )
-
-
