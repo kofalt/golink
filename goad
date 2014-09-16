@@ -16,12 +16,20 @@ function usage {
 
 function run_init {
 	git submodule update --init
+	mkdir -p $GOPATH/bin # Cheap trick to flag having a dev environment set up
 }
 
-function run_build   { go build -o $name $pkg/main; }
 function run_test    { go test -v "$pkgs";          }
 function run_fmt     { go fmt "$pkgs";              }
-function run_install { go install $pkg/main;        }
+
+function run_build   {
+	test -d $GOPATH/bin || run_init
+	go build -o $name $pkg/main;
+}
+function run_install {
+	test -d $GOPATH/bin || run_init
+	go install $pkg/main;
+}
 
 function run_doc {
 	# If packages were not specified, use local folders
