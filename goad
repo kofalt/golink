@@ -55,7 +55,7 @@ for opt in $@; do case "$opt" in
 	fmt)     do_fmt=true     ;;
 	doc)     do_doc=true     ;;
 	help)    usage           ;;
-	*)       pkgs+=($opt)    ;; #
+	*)       pkgs+=($opt)    ;; # Other params are treated as golang packages
 esac; done
 
 # Decide if all packages will be compiled, or user-specified ones

@@ -48,6 +48,7 @@ func (opts *CreateCmdOpts) Execute(args []string) error {
 
 	// Write goad bash script
 	goad := strings.Replace(GoadTemplate, "PACKAGE", pkg,  -1)
+	goad = strings.Replace(goad, "~~", "`",  -1)
 	WriteFile(filepath.Join(".", "goad"), goad, 0755)
 
 	// Run build

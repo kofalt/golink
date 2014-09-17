@@ -19,48 +19,78 @@ const GoadTemplate = `#!/bin/bash
 pkg="PACKAGE"
 name="${pkg##*/}"
 
-
 # Where is this script located?
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$DIR"
-export GOPATH="$PWD"/.gopath/
-export BASEDIR="$PWD"
 
+function usage {
+	echo "Usage: $0 [init|build|clean|test|fmt|doc] [go packages...]"
+	exit 2
+}
 
-# subsection arg?
-[ -z "$2" ] && SUBSECTION="./..." || SUBSECTION="./$2"
+function run_init {
+	git submodule update --init
+	mkdir -p $GOPATH/bin # Cheap trick to flag having a dev environment set up
+}
 
+function run_test    { go test -v "$pkgs";                 }
+function run_fmt     { go fmt "$pkgs";                     }
+function run_clean   { rm -rf $GOPATH/bin/* $GOPATH/pkg/*; }
 
-case "$1" in
-	init)
-		# it's your responsibility to do this the first time
-		# (we don't do it at the front of every build because it will move submodules if you already have them, and that might not be what you want as you're plowing along)
-		git submodule update --init
-		;;
-	build)
-		go build -o $name $pkg
-		;;
-	test)
-		go test -v "$SUBSECTION"
-		;;
-	install)
-		go install $pkg
-		;;
-	fmt)
-		go fmt "$SUBSECTION"
-		;;
-	doc)
-		[ -z "$2" ] && packages=$(for dir in */; do find "$dir" -type d; done) || packages="$2"
-		for package in $packages; do
-			echo -e "==== $package ====\n"
-			godoc $pkg/$package
-			echo -e "\n\n\n"
-		done
-		;;
-	*)
-		echo "Usage: $0 {init|build|test|install|fmt|doc}" 1>&2;
-		exit 1
-	;;
-esac
+function run_build   {
+	test -d $GOPATH/bin || run_init
 
+	# The ~~go install~~ command does not allow you to name the executable, but caches intermediate ~~.a~~ files in ~~.gopath/pkg~~, making incremental builds instant. The ~~go build~~ command does not support this feature.
+	# So, incremental build, then copy & rename wherever.
+	go install -v $pkg
+	cp "$GOPATH/bin/$name" "./$name"
+}
+
+function run_doc {
+	# If packages were not specified, use local folders
+	if [[ $pkgs == "./..." ]] ; then
+		pkgs=$(for dir in */; do find "$dir" -type d; done)
+	fi
+
+	for package in $pkgs; do
+		echo -e "==== $package ====\n"
+		godoc $pkg/$package
+		echo -e "\n\n\n"
+	done
+}
+
+# pkgs to compile
+pkgs=()
+
+# Get command-line parameters
+for opt in $@; do case "$opt" in
+	init)    do_init=true    ;;
+	build)   do_build=true   ;;
+	clean)   do_clean=true   ;;
+	test)    do_test=true    ;;
+	fmt)     do_fmt=true     ;;
+	doc)     do_doc=true     ;;
+	help)    usage           ;;
+	*)       pkgs+=($opt)    ;; # Other params are treated as golang packages
+esac; done
+
+# Decide if all packages will be compiled, or user-specified ones
+if [[ ${#pkgs[@]} -eq 0 ]] ; then pkgs="./..."; else pkgs="${pkgs[@]}"; fi
+
+(
+	cd "$DIR"
+
+	export GOPATH="$PWD"/.gopath/
+	export BASEDIR="$PWD"
+
+	# Run commands in right order
+	test $do_init    && run_init
+	test $do_clean   && run_clean
+	test $do_build   && run_build
+	test $do_test    && run_test
+	test $do_fmt     && run_fmt
+	test $do_doc     && run_doc
+
+	# Run build if no commands were specified
+	test $do_init || test $do_clean || test $do_build || test $do_test || test $do_install || test $do_fmt || test $do_doc || run_build
+)
 `
