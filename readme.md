@@ -39,17 +39,32 @@ By default, the Go toolchain requires environment variables dictating a single f
 
 This is not an exhaustive comparison - just explaining the motivations behind GoLink.
 
-Name        | Config | Isolated | Vendors | Repeatable | Required to Build | Link
------------ | ------ | -------- | ------- | ---------- | ----------------- | ----
-GoLink      | None   | Yes      | No      | Yes        | No                | [Here](https://github.com/kofalt/golink)
-Godep       | JSON   | No       | Yes     | Optionally | Yes               | [Here](https://github.com/tools/godep)
-Goop        | Custom | Yes      | No      | Optionally | Yes               | [Here](https://github.com/nitrous-io/goop)
-Johnny Deps | Custom | No       | No      | Optionally | Yes               | [Here](https://github.com/VividCortex/johnny-deps)
-Goat        | YAML   | No       | No      | No         | Yes               | [Here](https://github.com/mediocregopher/goat)
-Gpm         | Custom | No       | No      | Optionally | Yes               | [Here](https://github.com/pote/gpm)
+Name                                                       | Config | Isolated | Vendors | Repeatable | Required to Build
+---------------------------------------------------------- | ------ | -------- | ------- | ---------- | -----------------
+[GoLink](https://github.com/kofalt/golink)                 | None   | Yes      | No      | Yes        | No
+[Godep](https://github.com/tools/godep)                    | JSON   | No       | Yes     | Optionally | Yes
+[Goop](https://github.com/nitrous-io/goop)                 | Custom | Yes      | No      | Optionally | Yes
+[Johnny Deps](https://github.com/VividCortex/johnny-deps)  | Custom | No       | No      | Optionally | Yes
+[Goat](https://github.com/mediocregopher/goat)             | YAML   | No       | No      | No         | Yes
+[Gpm](https://github.com/pote/gpm)                         | Custom | No       | No      | Optionally | Yes
 
 To be isolated, your tool needs to not interact with or read from any other golang libraries on the system, and not require that GOPATH be set up.
 To be repeatable, your tool needs to resolve exactly one set of libraries given a version of your project.
+
+## Features
+
+Running the `goad` script without any parameters will build the project - using incremental build caching, which `go build` does not! Maximum fast.
+
+Other features are available for your convenience:
+
+```bash
+$ ./goad help
+Usage: ./goad [init|build|clean|test|fmt|doc] [go packages...]
+```
+
+`./goad test`, `./goad fmt`, and `./goad doc` can all optionally take a set of package names, separated by a space. This will cause them to only test, format, or document a portion of your project.
+
+Placing multiple commands works fine as well: `./goad build test`.
 
 ## Windows
 
