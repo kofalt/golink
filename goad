@@ -3,14 +3,13 @@
 # Project details
 pkg="polydawn.net/golink"
 name="golink"
+mainPackage="main"
 
 # Where is this script located?
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-
-
 function usage {
-	echo "Usage: $0 [init|build|test|install|fmt|doc] [go packages...]"
+	echo "Usage: $0 [init|build|clean|test|fmt|doc] [go packages...]"
 	exit 2
 }
 
@@ -22,13 +21,17 @@ function run_init {
 function run_test    { go test -v "$pkgs";          }
 function run_fmt     { go fmt "$pkgs";              }
 
+function run_clean   {
+	rm -rf $GOPATH/bin/* $GOPATH/pkg/*
+}
+
 function run_build   {
 	test -d $GOPATH/bin || run_init
-	go build -o $name $pkg/main;
-}
-function run_install {
-	test -d $GOPATH/bin || run_init
-	go install $pkg/main;
+
+	# The `go install` command does not allow you to name the executable, but caches intermediate `.a` files in `.gopath/pkg`, making incremental builds instant. The `go build` command does not support this feature.
+	# So, incremental build, then copy & rename wherever.
+	go install -v $pkg/$mainPackage
+	cp "$GOPATH/bin/$mainPackage" "./$name"
 }
 
 function run_doc {
@@ -51,8 +54,8 @@ pkgs=()
 for opt in $@; do case "$opt" in
 	init)    do_init=true    ;;
 	build)   do_build=true   ;;
+	clean)   do_clean=true   ;;
 	test)    do_test=true    ;;
-	install) do_install=true ;;
 	fmt)     do_fmt=true     ;;
 	doc)     do_doc=true     ;;
 	help)    usage           ;;
@@ -70,6 +73,7 @@ if [[ ${#pkgs[@]} -eq 0 ]] ; then pkgs="./..."; else pkgs="${pkgs[@]}"; fi
 
 	# Run commands in right order
 	test $do_init    && run_init
+	test $do_clean   && run_clean
 	test $do_build   && run_build
 	test $do_test    && run_test
 	test $do_install && run_install
