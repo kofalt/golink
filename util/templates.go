@@ -13,7 +13,7 @@ func main() {
 }
 
 `
-const GoadTemplate = `#!/bin/bash
+const GoadTemplate = `#!/bin/bash -e
 
 # Project details
 pkg="PACKAGE"
