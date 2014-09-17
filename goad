@@ -18,12 +18,9 @@ function run_init {
 	mkdir -p $GOPATH/bin # Cheap trick to flag having a dev environment set up
 }
 
-function run_test    { go test -v "$pkgs";          }
-function run_fmt     { go fmt "$pkgs";              }
-
-function run_clean   {
-	rm -rf $GOPATH/bin/* $GOPATH/pkg/*
-}
+function run_test    { go test -v "$pkgs";                 }
+function run_fmt     { go fmt "$pkgs";                     }
+function run_clean   { rm -rf $GOPATH/bin/* $GOPATH/pkg/*; }
 
 function run_build   {
 	test -d $GOPATH/bin || run_init
@@ -76,7 +73,9 @@ if [[ ${#pkgs[@]} -eq 0 ]] ; then pkgs="./..."; else pkgs="${pkgs[@]}"; fi
 	test $do_clean   && run_clean
 	test $do_build   && run_build
 	test $do_test    && run_test
-	test $do_install && run_install
 	test $do_fmt     && run_fmt
 	test $do_doc     && run_doc
+
+	# Run build if no commands were specified
+	test $do_init || test $do_clean || test $do_build || test $do_test || test $do_install || test $do_fmt || test $do_doc || run_build
 )
