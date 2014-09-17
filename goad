@@ -2,8 +2,7 @@
 
 # Project details
 pkg="polydawn.net/golink"
-name="golink"
-mainPackage="main"
+name="${pkg##*/}"
 
 # Where is this script located?
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -27,8 +26,8 @@ function run_build   {
 
 	# The `go install` command does not allow you to name the executable, but caches intermediate `.a` files in `.gopath/pkg`, making incremental builds instant. The `go build` command does not support this feature.
 	# So, incremental build, then copy & rename wherever.
-	go install -v $pkg/$mainPackage
-	cp "$GOPATH/bin/$mainPackage" "./$name"
+	go install -v $pkg
+	cp "$GOPATH/bin/$name" "./$name"
 }
 
 function run_doc {
