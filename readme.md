@@ -57,7 +57,7 @@ This is not an exhaustive comparison - just explaining the motivations behind Go
 Name                                                       | Config | Isolated | Vendors | Repeatable | Required to Build
 ---------------------------------------------------------- | ------ | -------- | ------- | ---------- | -----------------
 [GoLink](https://github.com/kofalt/golink)                 | None   | Yes      | No      | Yes        | No
-[Godep](https://github.com/tools/godep)                    | JSON   | No       | Yes     | Optionally | Yes
+[Godep](https://github.com/tools/godep)                    | JSON   | No       | Yes     | Optionally | Optionally
 [Goop](https://github.com/nitrous-io/goop)                 | Custom | Yes      | No      | Optionally | Yes
 [Johnny Deps](https://github.com/VividCortex/johnny-deps)  | Custom | No       | No      | Optionally | Yes
 [Goat](https://github.com/mediocregopher/goat)             | YAML   | No       | No      | No         | Yes
