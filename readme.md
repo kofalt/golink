@@ -2,7 +2,7 @@
 
 The simplest possible way to add libraries to your Go project.
 
-No environment variables, no extra config files, and your contributors won't even need to know about it.
+No environment variables, no config files, and your contributors won't even need to know about it.
 
 ## How?
 
