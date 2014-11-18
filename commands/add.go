@@ -14,7 +14,7 @@ type AddCmdOpts struct { }
 //Runs a container
 func (opts *AddCmdOpts) Execute(args []string) error {
 	if len(args) != 2 {
-		ExitGently("Create takes two arguments: clone URI, and package name.")
+		ExitGently("'add' requires two arguments: clone URI, and package name.\n\nTry: golink add https://github.com/polydawn/pogo polydawn.net/pogo")
 	}
 
 	// Load args

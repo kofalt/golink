@@ -14,7 +14,7 @@ type CreateCmdOpts struct { }
 //Runs a container
 func (opts *CreateCmdOpts) Execute(args []string) error {
 	if len(args) != 1 {
-		ExitGently("Init one argument, the package name.  (The executable name will be the last chunk of the package.)")
+		ExitGently("'create' requires one argument, the package name.\nThe executable's name will be the last chunk of the package.\n\nTry: golink create kofalt.com/example")
 	}
 
 	// Load args
